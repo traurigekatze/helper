@@ -24,7 +24,7 @@ public class Sm4Utils {
 
     private static final String ALGORITHM = "SM4";
 
-    private static final String ALGORITHM_ECB_PADDING = "SM4/ECB/PKCS5Padding";
+    private static final String ALGORITHM_ECB_PADDING = "PKCS5Padding";
 
     /**
      * 128 -- 32位16进制；256 -- 64位16进制
@@ -33,6 +33,7 @@ public class Sm4Utils {
 
     /**
      * 生成 ECB 暗号
+     * @param padding
      * @param mode 模式
      * @param key
      * @return
@@ -41,8 +42,8 @@ public class Sm4Utils {
      * @throws NoSuchProviderException
      * @throws InvalidKeyException
      */
-    private static Cipher generateEcbCipher(int mode, byte[] key) throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(ALGORITHM_ECB_PADDING, BouncyCastleProvider.PROVIDER_NAME);
+    private static Cipher generateEcbCipher(String padding, int mode, byte[] key) throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+        Cipher cipher = Cipher.getInstance(padding, BouncyCastleProvider.PROVIDER_NAME);
         Key keySpec = new SecretKeySpec(key, ALGORITHM);
         cipher.init(mode, keySpec);
         return cipher;
@@ -76,7 +77,7 @@ public class Sm4Utils {
         byte[] keyData = ByteUtils.fromHexString(hexKey);
         byte[] contentData = content.getBytes(StandardCharsets.UTF_8);
         try {
-            Cipher cipher = generateEcbCipher(Cipher.ENCRYPT_MODE, keyData);
+            Cipher cipher = generateEcbCipher(ALGORITHM_ECB_PADDING, Cipher.ENCRYPT_MODE, keyData);
             byte[] cipherData = cipher.doFinal(contentData);
             cipherTxt = ByteUtils.toHexString(cipherData);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException
@@ -97,7 +98,7 @@ public class Sm4Utils {
         byte[] keyData = ByteUtils.fromHexString(hexKey);
         byte[] cipherData = ByteUtils.fromHexString(cipherTxt);
         try {
-            Cipher cipher = generateEcbCipher(Cipher.DECRYPT_MODE, keyData);
+            Cipher cipher = generateEcbCipher(ALGORITHM_ECB_PADDING, Cipher.DECRYPT_MODE, keyData);
             byte[] originData = cipher.doFinal(cipherData);
             decryptTxt = new String(originData, StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
